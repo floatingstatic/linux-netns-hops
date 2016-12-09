@@ -10,27 +10,27 @@ def lines_in_file(txt_file):
     return count
 
 def generate_ptr_ipv6(txt_file,subnet):
-	# Load data from file into list
-	f_lines = []
-	with open(txt_file) as fh:
-		for line in fh:
-			f_lines.append(line.rstrip('\n'))
+    # Load data from file into list
+    f_lines = []
+    with open(txt_file) as fh:
+        for line in fh:
+            f_lines.append(line.rstrip('\n'))
 
-	# Open file handle for output
-	out = open('ptr_records_v6.txt','w+')
+    # Open file handle for output
+    out = open('ptr_records_v6.txt','w+')
 
-	net = IPNetwork(subnet)
-	index = 1
-	count = 0
-	while count < len(f_lines):
-		ip_reverse = str(hexlify(socket.inet_pton(socket.AF_INET6, str(net[index]))))
-		ptr = str()
-		for x in ip_reverse[::-1]:
-			ptr += x + "."
-		ptr += "ip6.arpa." + "\tIN\tPTR\t" + f_lines[count] + ".\n"
-		index += 2
-		count += 1
-		out.write(ptr)
+    net = IPNetwork(subnet)
+    index = 1
+    count = 0
+    while count < len(f_lines):
+        ip_reverse = str(hexlify(socket.inet_pton(socket.AF_INET6, str(net[index]))))
+        ptr = str()
+        for x in ip_reverse[::-1]:
+            ptr += x + "."
+        ptr += "ip6.arpa." + "\tIN\tPTR\t" + f_lines[count] + ".\n"
+        index += 2
+        count += 1
+        out.write(ptr)
 
 def generate_ptr_ipv4(txt_file,subnet):
     # Load data from file into list
@@ -55,52 +55,52 @@ def generate_ptr_ipv4(txt_file,subnet):
     return len(f_lines)
 
 def generate_namespaces(hops_out,hops):
-	count = 1
-	while count < hops + 1:
-		hops_out.write(txt_to_cmd("ip netns add vrf%d" % count))
-		count += 1
+    count = 1
+    while count < hops + 1:
+        hops_out.write(txt_to_cmd("ip netns add vrf%d" % count))
+        count += 1
 
 def generate_veth_interfaces(hops_out,hops):
-	count = 1
-	int_count = 1
-	while count < hops + 1:
-		int_a = int_count
-		int_b = int_count + 1
-		hops_out.write(txt_to_cmd("ip link add veth%d type veth peer name veth%d" % (int_a,int_b)))
-		if count != 1:
-			vrf1 = count - 1
-			hops_out.write(txt_to_cmd("ip link set veth%d netns vrf%d" % (int_a,vrf1)))
-			vrf2 = count
-			hops_out.write(txt_to_cmd("ip link set veth%d netns vrf%d" % (int_b,vrf2)))
-		else:
-			hops_out.write(txt_to_cmd("ip link set veth%d netns vrf%d" % (int_b,count)))
-		count += 1
-		int_count += 2
+    count = 1
+    int_count = 1
+    while count < hops + 1:
+        int_a = int_count
+        int_b = int_count + 1
+        hops_out.write(txt_to_cmd("ip link add veth%d type veth peer name veth%d" % (int_a,int_b)))
+        if count != 1:
+            vrf1 = count - 1
+            hops_out.write(txt_to_cmd("ip link set veth%d netns vrf%d" % (int_a,vrf1)))
+            vrf2 = count
+            hops_out.write(txt_to_cmd("ip link set veth%d netns vrf%d" % (int_b,vrf2)))
+        else:
+            hops_out.write(txt_to_cmd("ip link set veth%d netns vrf%d" % (int_b,count)))
+        count += 1
+        int_count += 2
 
 def generate_veth_ips(hops_out,hops,subnets,mask):
-	count = 1
-	int_count = 1
-	for x in subnets:
-		if count > hops:
-			break
+    count = 1
+    int_count = 1
+    for x in subnets:
+        if count > hops:
+            break
 
-		ipsubnet = IPNetwork(x)
-		if count == 1:
-			hops_out.write(txt_to_cmd("ip address add %s/%s dev veth1" % (str(ipsubnet[0]),mask)))
-			hops_out.write(txt_to_cmd("ip netns exec vrf1 ip address add %s/%s dev veth2" % (str(ipsubnet[1]),mask))) 
-			hops_out.write(txt_to_cmd("ip link set dev veth1 up"))
-			hops_out.write(txt_to_cmd("ip netns exec vrf1 ip link set dev veth2 up"))
-		else:
-			int_a = int_count
-			int_b = int_count + 1
-			vrf1 = count - 1
-			vrf2 = count
-			hops_out.write(txt_to_cmd("ip netns exec vrf%d ip address add %s/%s dev veth%d" % (vrf1,str(ipsubnet[0]),mask,int_a)))
-			hops_out.write(txt_to_cmd("ip netns exec vrf%d ip address add %s/%s dev veth%d" % (vrf2,str(ipsubnet[1]),mask,int_b)))
-			hops_out.write(txt_to_cmd("ip netns exec vrf%d ip link set dev veth%d up" % (vrf1,int_a)))
-			hops_out.write(txt_to_cmd("ip netns exec vrf%d ip link set dev veth%d up" % (vrf2,int_b)))
-		count += 1
-		int_count += 2
+        ipsubnet = IPNetwork(x)
+        if count == 1:
+            hops_out.write(txt_to_cmd("ip address add %s/%s dev veth1" % (str(ipsubnet[0]),mask)))
+            hops_out.write(txt_to_cmd("ip netns exec vrf1 ip address add %s/%s dev veth2" % (str(ipsubnet[1]),mask))) 
+            hops_out.write(txt_to_cmd("ip link set dev veth1 up"))
+            hops_out.write(txt_to_cmd("ip netns exec vrf1 ip link set dev veth2 up"))
+        else:
+            int_a = int_count
+            int_b = int_count + 1
+            vrf1 = count - 1
+            vrf2 = count
+            hops_out.write(txt_to_cmd("ip netns exec vrf%d ip address add %s/%s dev veth%d" % (vrf1,str(ipsubnet[0]),mask,int_a)))
+            hops_out.write(txt_to_cmd("ip netns exec vrf%d ip address add %s/%s dev veth%d" % (vrf2,str(ipsubnet[1]),mask,int_b)))
+            hops_out.write(txt_to_cmd("ip netns exec vrf%d ip link set dev veth%d up" % (vrf1,int_a)))
+            hops_out.write(txt_to_cmd("ip netns exec vrf%d ip link set dev veth%d up" % (vrf2,int_b)))
+        count += 1
+        int_count += 2
 
 def generate_static_routes(hops_out,hops,subnets,mask):
     gw_forward = []
@@ -120,7 +120,7 @@ def generate_static_routes(hops_out,hops,subnets,mask):
     # Last hop
     last_hop = str(gw_forward[-1])
     print "Last hop: %s" % str(last_hop)
-	
+    
     # Routes to destination
     count = 1
     vrf_count = 0
@@ -168,17 +168,17 @@ def generate_static_routes(hops_out,hops,subnets,mask):
         gw_count += 1
 
 def generate_ipv6_forward_sysctl(hops_out,hops):
-	# Base VRF
-	hops_out.write(txt_to_cmd("sysctl -w net.ipv6.conf.all.forwarding=1"))
-	hops_out.write(txt_to_cmd("sysctl -w net.ipv6.conf.default.forwarding=1"))
-	hops_out.write(txt_to_cmd("sysctl -w net.ipv6.icmp.ratelimit=0"))
-	# Namespaces
-	count = 1
-	while count < hops + 1:
-		hops_out.write(txt_to_cmd("ip netns exec vrf%d sysctl -w net.ipv6.conf.all.forwarding=1" % count))
-		hops_out.write(txt_to_cmd("ip netns exec vrf%d sysctl -w net.ipv6.conf.default.forwarding=1" % count))
-		hops_out.write(txt_to_cmd("ip netns exec vrf%d sysctl -w net.ipv6.icmp.ratelimit=0" % count))
-		count += 1
+    # Base VRF
+    hops_out.write(txt_to_cmd("sysctl -w net.ipv6.conf.all.forwarding=1"))
+    hops_out.write(txt_to_cmd("sysctl -w net.ipv6.conf.default.forwarding=1"))
+    hops_out.write(txt_to_cmd("sysctl -w net.ipv6.icmp.ratelimit=0"))
+    # Namespaces
+    count = 1
+    while count < hops + 1:
+        hops_out.write(txt_to_cmd("ip netns exec vrf%d sysctl -w net.ipv6.conf.all.forwarding=1" % count))
+        hops_out.write(txt_to_cmd("ip netns exec vrf%d sysctl -w net.ipv6.conf.default.forwarding=1" % count))
+        hops_out.write(txt_to_cmd("ip netns exec vrf%d sysctl -w net.ipv6.icmp.ratelimit=0" % count))
+        count += 1
 
 def generate_ipv4_forward_sysctl(hops_out,hops):
     # Base VRF
@@ -203,8 +203,8 @@ def generate_base_sysctl(hops_out):
     hops_out.write(txt_to_cmd("sysctl -w net.ipv6.icmp.ratelimit=0"))
 
 def txt_to_cmd(txt):
-	cmd = "%s\n" % txt
-	return cmd
+    cmd = "%s\n" % txt
+    return cmd
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A silly script to generate hops through Linux namespaces')
@@ -218,7 +218,7 @@ if __name__ == '__main__':
     txt_file = args['file']
     numhops = 0
 
-	# Open output file handle
+    # Open output file handle
     hops_out = open('create_hops.sh','w+')
     numhops = lines_in_file(txt_file)
     if numhops < 1:
@@ -258,5 +258,3 @@ if __name__ == '__main__':
 
     # Close file handle
     hops_out.close()
-
-

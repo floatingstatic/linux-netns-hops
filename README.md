@@ -11,4 +11,12 @@ This script will also generate PTR records in a seperate file for inclusion in a
 Example usage:
 ```
 ./linux-netns-hops.py -f traceroute.txt -6 "2607:ffc8:8000:fa57::/64"
+Total Hops: 25
+Last hop: 2607:ffc8:8000:fa57::31
+```
+
+Example Outputs:
+```
+create_hops.sh
+ptr_records_v6.txt
 ```
