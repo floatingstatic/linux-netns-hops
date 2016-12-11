@@ -31,6 +31,7 @@ def generate_ptr_ipv6(txt_file,subnet):
         index += 2
         count += 1
         out.write(ptr)
+    out.close()
 
 def generate_ptr_ipv4(txt_file,subnet):
     # Load data from file into list
@@ -52,6 +53,7 @@ def generate_ptr_ipv4(txt_file,subnet):
         index += 2
         count += 1
         out.write(ptr)
+    out.close()
     return len(f_lines)
 
 def generate_namespaces(hops_out,hops):
